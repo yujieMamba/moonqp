@@ -84,7 +84,7 @@ pub fn DenseVector::to_array(Self) -> Array[Double]
 pub fn DenseVector::with_value(Self, Int, Double) -> Self?
 pub fn DenseVector::zeros(Int) -> Self?
 
-pub(all) struct QpProblem {
+pub struct QpProblem {
   p : Array[Array[Double]]
   q : Array[Double]
   a : Array[Array[Double]]

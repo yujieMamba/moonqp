@@ -1,7 +1,9 @@
 ///|
 /// A dense continuous convex quadratic program:
 /// minimize 0.5 * x' * P * x + q' * x subject to lower <= A * x <= upper.
-pub(all) struct QpProblem {
+/// An immutable-by-API problem snapshot. The constructor copies all supplied
+/// arrays so later caller-side mutation cannot change a problem being solved.
+pub struct QpProblem {
   p : Array[Array[Double]]
   q : Array[Double]
   a : Array[Array[Double]]
@@ -19,7 +21,13 @@ pub fn QpProblem::new(
   lower : Array[Double],
   upper : Array[Double],
 ) -> QpProblem {
-  { p, q, a, lower, upper, }
+  {
+    p: copy_matrix(p),
+    q: copy_vector(q),
+    a: copy_matrix(a),
+    lower: copy_vector(lower),
+    upper: copy_vector(upper),
+  }
 }
 
 ///|
@@ -603,6 +611,15 @@ fn copy_vector(values : Array[Double]) -> Array[Double] {
   let result = Array::make(values.length(), 0.0)
   for i in 0..<values.length() {
     result[i] = values[i]
+  }
+  result
+}
+
+///|
+fn copy_matrix(values : Array[Array[Double]]) -> Array[Array[Double]] {
+  let result = Array::make(values.length(), [])
+  for i in 0..<values.length() {
+    result[i] = copy_vector(values[i])
   }
   result
 }

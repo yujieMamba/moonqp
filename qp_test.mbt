@@ -11,6 +11,24 @@ test "unconstrained quadratic reaches its analytic minimizer" {
 }
 
 ///|
+test "problem constructor snapshots caller-owned arrays" {
+  let p = [[2.0]]
+  let q = [-4.0]
+  let a = [[1.0]]
+  let lower = [0.0]
+  let upper = [10.0]
+  let problem = @moonqp.QpProblem::new(p, q, a, lower, upper)
+  p[0][0] = 20.0
+  q[0] = 100.0
+  a[0][0] = 10.0
+  lower[0] = 20.0
+  upper[0] = 20.0
+  let result = @moonqp.solve(problem)
+  assert_true(result.status is Solved)
+  assert_true((result.x[0] - 2.0).abs() <= 2.0e-5)
+}
+
+///|
 test "equality constraint is retained by interval projection" {
   let problem = @moonqp.QpProblem::new([[1.0]], [0.0], [[1.0]], [3.0], [3.0])
   let result = @moonqp.solve(problem)

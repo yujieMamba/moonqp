@@ -13,7 +13,7 @@ where `P` must be finite, symmetric, and numerically positive semidefinite. Boun
 
 ## Scope and status semantics
 
-- The QP API accepts row-major dense arrays and checks dimensions, finite coefficients, matrix symmetry and numerical convexity, and bound ordering before iteration.
+- The opaque `QpProblem` API accepts row-major dense arrays, snapshots caller-owned inputs at construction, and checks dimensions, finite coefficients, matrix symmetry and numerical convexity, and bound ordering before iteration.
 - `SolverSettings` exposes `rho`, proximal `sigma`, absolute/relative tolerances, and an iteration limit.
 - A result contains the candidate vector, objective, iteration count, residual diagnostics, and a typed status.
 - `IterationLimit` means only that the configured budget ended. It is **not** an infeasibility certificate.
