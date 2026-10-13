@@ -3,6 +3,7 @@ test "unconstrained quadratic reaches its analytic minimizer" {
   let problem = @moonqp.QpProblem::new([[2.0]], [-4.0], [], [], [])
   let result = @moonqp.solve(problem)
   assert_true(result.status is Solved)
+  assert_eq(result.constraint_dual, Some([]))
   assert_true((result.x[0] - 2.0).abs() <= 1.0e-4)
   assert_true((result.objective.unwrap() + 4.0).abs() <= 1.0e-4)
   let independent_gradient = 2.0 * result.x[0] - 4.0
@@ -50,6 +51,7 @@ test "equality constraint is retained by interval projection" {
   let result = @moonqp.solve(problem)
   assert_true(result.status is Solved)
   assert_true((result.x[0] - 3.0).abs() <= 2.0e-5)
+  assert_true((result.constraint_dual.unwrap()[0] + 3.0).abs() <= 2.0e-5)
   assert_true((result.objective.unwrap() - 4.5).abs() <= 1.0e-4)
   assert_true(result.primal_residual.unwrap() <= 5.0e-6)
 }
@@ -183,6 +185,7 @@ test "one-sided upper bound clamps an otherwise larger minimizer" {
   let result = @moonqp.solve(problem)
   assert_true(result.status is Solved)
   assert_true((result.x[0] - 1.0).abs() <= 2.0e-5)
+  assert_true((result.constraint_dual.unwrap()[0] - 1.0).abs() <= 2.0e-5)
   assert_true((result.objective.unwrap() + 1.5).abs() <= 2.0e-5)
   let independently_measured_violation = (result.x[0] - 1.0).max(0.0)
   assert_true(independently_measured_violation <= 2.0e-5)
@@ -197,6 +200,7 @@ test "one-sided lower bound clamps an otherwise smaller minimizer" {
   let result = @moonqp.solve(problem)
   assert_true(result.status is Solved)
   assert_true((result.x[0] + 1.0).abs() <= 2.0e-5)
+  assert_true((result.constraint_dual.unwrap()[0] + 1.0).abs() <= 2.0e-5)
   assert_true((result.objective.unwrap() + 1.5).abs() <= 2.0e-5)
   let independently_measured_violation = (-1.0 - result.x[0]).max(0.0)
   assert_true(independently_measured_violation <= 2.0e-5)

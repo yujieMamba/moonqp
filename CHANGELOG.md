@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Expose row-constraint Lagrange multipliers with a documented lower/upper sign convention.
 - Preserve completed iteration counts when a later numerical calculation fails.
 - Added candidate objective and maximum interval-violation evaluators on `QpProblem`.
 - Made `QpProblem` opaque and copy-safe so caller mutation cannot alter a constructed problem.

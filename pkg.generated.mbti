@@ -98,6 +98,7 @@ pub fn QpProblem::objective_at(Self, Array[Double]) -> Double?
 pub(all) struct SolveResult {
   x : Array[Double]
   objective : Double?
+  constraint_dual : Array[Double]?
   iterations : Int
   primal_residual : Double?
   dual_residual : Double?

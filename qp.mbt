@@ -124,10 +124,13 @@ pub(all) enum SolveStatus {
 
 ///|
 /// A solution and independently useful KKT/ADMM residual diagnostics.
-/// Residual and objective fields are absent when they could not be computed.
+/// `constraint_dual` uses negative multipliers at active lower bounds and
+/// positive multipliers at active upper bounds; equality-row multipliers are
+/// unrestricted. Solution fields are absent when they are unavailable.
 pub(all) struct SolveResult {
   x : Array[Double]
   objective : Double?
+  constraint_dual : Array[Double]?
   iterations : Int
   primal_residual : Double?
   dual_residual : Double?
@@ -337,6 +340,7 @@ pub fn solve(
   {
     x,
     objective: Some(objective),
+    constraint_dual: Some(copy_vector(y)),
     iterations: iteration,
     primal_residual: Some(last_primal),
     dual_residual: Some(last_dual),
@@ -359,6 +363,7 @@ fn failure_after(
   {
     x,
     objective: None,
+    constraint_dual: None,
     iterations,
     primal_residual: None,
     dual_residual: None,

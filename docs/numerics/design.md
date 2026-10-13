@@ -11,7 +11,7 @@ A problem consists of a finite symmetric numerically positive-semidefinite matri
 
 The dense ADMM splitting uses `z = Ax` and projects each row onto its permitted interval. For each call, the solver forms and Cholesky-factorizes `P + rho AᵀA + sigma I`, then reuses that factor within the iteration. `sigma` must be positive, so the x-update remains positive definite even when `P` is singular positive semidefinite.
 
-The solver checks interval feasibility and KKT stationarity using absolute-plus-relative tolerances. It exposes the objective, primal feasibility residual, ADMM dual residual, stationarity residual, iteration count and typed status. The status `IterationLimit` means the configured budget expired; it does not prove infeasibility. The current API has no infeasibility certificate and does not warm-start or update a previous model.
+The solver checks interval feasibility and KKT stationarity using absolute-plus-relative tolerances. It exposes the objective, row-constraint dual multipliers (negative at active lower bounds, positive at active upper bounds), primal feasibility residual, ADMM dual residual, stationarity residual, iteration count and typed status. The status `IterationLimit` means the configured budget expired; it does not prove infeasibility. The current API has no infeasibility certificate and does not warm-start or update a previous model.
 
 ## Numerical acceptance
 
