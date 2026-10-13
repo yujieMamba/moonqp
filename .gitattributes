@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+# Preserve the exact canonical text form required by MoonBit tooling.
+*.mbt text eol=lf
+*.mbti text eol=lf
+moon.mod text eol=lf
+moon.pkg text eol=lf
