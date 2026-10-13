@@ -91,7 +91,9 @@ pub struct QpProblem {
   lower : Array[Double]
   upper : Array[Double]
 }
+pub fn QpProblem::max_constraint_violation(Self, Array[Double]) -> Double?
 pub fn QpProblem::new(Array[Array[Double]], Array[Double], Array[Array[Double]], Array[Double], Array[Double]) -> Self
+pub fn QpProblem::objective_at(Self, Array[Double]) -> Double?
 
 pub(all) struct SolveResult {
   x : Array[Double]

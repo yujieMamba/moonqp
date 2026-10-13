@@ -11,6 +11,22 @@ test "unconstrained quadratic reaches its analytic minimizer" {
 }
 
 ///|
+test "model evaluation reports objective and interval violation" {
+  let problem = @moonqp.QpProblem::new(
+    [[2.0, 0.0], [0.0, 4.0]],
+    [-2.0, -4.0],
+    [[1.0, 1.0]],
+    [0.0],
+    [1.0],
+  )
+  assert_true((problem.objective_at([1.0, 1.0]).unwrap() + 3.0).abs() < 1.0e-12)
+  assert_eq(problem.max_constraint_violation([1.0, 1.0]), Some(1.0))
+  assert_eq(problem.max_constraint_violation([0.0, 0.0]), Some(0.0))
+  assert_true(problem.objective_at([1.0]) is None)
+  assert_true(problem.max_constraint_violation([1.0]) is None)
+}
+
+///|
 test "problem constructor snapshots caller-owned arrays" {
   let p = [[2.0]]
   let q = [-4.0]

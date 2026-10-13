@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added candidate objective and maximum interval-violation evaluators on `QpProblem`.
 - Made `QpProblem` opaque and copy-safe so caller mutation cannot alter a constructed problem.
 - Added a dense-first MoonBit solver for continuous convex quadratic programs with linear interval constraints.
 - Added finite-checked dense matrix/vector arithmetic with pivoted LU and Cholesky factor APIs.

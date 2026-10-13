@@ -31,6 +31,66 @@ pub fn QpProblem::new(
 }
 
 ///|
+/// Evaluate the quadratic objective at a candidate vector. Invalid model
+/// data, a wrong vector length, non-finite values, or arithmetic overflow
+/// return `None`.
+pub fn QpProblem::objective_at(self : QpProblem, x : Array[Double]) -> Double? {
+  match validate_problem(self) {
+    Some(_) => return None
+    None => ()
+  }
+  if x.length() != self.q.length() || !all_finite(x) {
+    return None
+  }
+  let value = evaluate_objective(self.p, self.q, x)
+  if is_finite(value) {
+    Some(value)
+  } else {
+    None
+  }
+}
+
+///|
+/// Return the maximum non-negative violation of `lower <= A * x <= upper`.
+/// A feasible point returns zero; malformed data and arithmetic overflow
+/// return `None`.
+pub fn QpProblem::max_constraint_violation(
+  self : QpProblem,
+  x : Array[Double],
+) -> Double? {
+  match validate_problem(self) {
+    Some(_) => return None
+    None => ()
+  }
+  if x.length() != self.q.length() || !all_finite(x) {
+    return None
+  }
+  let ax = mat_vec(self.a, x)
+  if !all_finite(ax) {
+    return None
+  }
+  let mut maximum = 0.0
+  for row in 0..<ax.length() {
+    let lower_violation = if self.lower[row].is_neg_inf() {
+      0.0
+    } else {
+      (self.lower[row] - ax[row]).max(0.0)
+    }
+    let upper_violation = if self.upper[row].is_pos_inf() {
+      0.0
+    } else {
+      (ax[row] - self.upper[row]).max(0.0)
+    }
+    if !is_finite(lower_violation) || !is_finite(upper_violation) {
+      return None
+    }
+    maximum = max_double(maximum, lower_violation)
+    maximum = max_double(maximum, upper_violation)
+  }
+  Some(maximum)
+}
+
+///|
 /// ADMM and termination settings. `sigma` is the positive proximal
 /// regularization used to keep each dense x-update positive definite.
 pub(all) struct SolverSettings {

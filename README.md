@@ -15,7 +15,7 @@ where `P` must be finite, symmetric, and numerically positive semidefinite. Boun
 
 - The opaque `QpProblem` API accepts row-major dense arrays, snapshots caller-owned inputs at construction, and checks dimensions, finite coefficients, matrix symmetry and numerical convexity, and bound ordering before iteration.
 - `SolverSettings` exposes `rho`, proximal `sigma`, absolute/relative tolerances, and an iteration limit.
-- A result contains the candidate vector, objective, iteration count, residual diagnostics, and a typed status.
+- A result contains the candidate vector, objective, iteration count, residual diagnostics, and a typed status. Models also expose independent objective and maximum interval-violation evaluation for candidate checks.
 - `IterationLimit` means only that the configured budget ended. It is **not** an infeasibility certificate.
 - Mixed-integer and nonconvex models, sparse matrices, warm starts, in-place model updates, adaptive penalty updates, scaling, and infeasibility certificates are outside the current supported contract. No OSQP performance or behavioral parity is claimed.
 
