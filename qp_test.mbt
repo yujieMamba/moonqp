@@ -761,3 +761,63 @@ test "empty constraint set solves a rank-deficient convex objective" {
   let objective = 0.5 * (x0 + x1) * (x0 + x1) - 2.0 * x0 - 2.0 * x1
   assert_true((objective + 2.0).abs() <= 2.0e-5)
 }
+
+///|
+test "QP solution is invariant to coupled variable and row permutations" {
+  let positive_infinity = 1.0 / 0.0
+  let original = @moonqp.QpProblem::new(
+    [[4.0, 1.0], [1.0, 2.0]],
+    [-5.5, -6.5],
+    [[1.0, 1.0], [1.0, -1.0]],
+    [3.0, -1.0],
+    [3.0, positive_infinity],
+  )
+  let permuted = @moonqp.QpProblem::new(
+    [[2.0, 1.0], [1.0, 4.0]],
+    [-6.5, -5.5],
+    [[-1.0, 1.0], [1.0, 1.0]],
+    [-1.0, 3.0],
+    [positive_infinity, 3.0],
+  )
+  let settings = {
+    ..@moonqp.SolverSettings::default(),
+    absolute_tolerance: 1.0e-8,
+    relative_tolerance: 1.0e-8,
+  }
+  let original_result = @moonqp.solve(original, settings~)
+  let permuted_result = @moonqp.solve(permuted, settings~)
+  assert_true(original_result.status is @moonqp.Solved)
+  assert_true(permuted_result.status is @moonqp.Solved)
+  assert_true((original_result.x[0] - 1.0).abs() < 2.0e-5)
+  assert_true((original_result.x[1] - 2.0).abs() < 2.0e-5)
+  assert_true((permuted_result.x[0] - 2.0).abs() < 2.0e-5)
+  assert_true((permuted_result.x[1] - 1.0).abs() < 2.0e-5)
+  assert_true(
+    (original_result.objective.unwrap() - permuted_result.objective.unwrap()).abs() <
+    2.0e-5,
+  )
+  assert_true(original_result.constraint_dual.unwrap()[1] <= 1.0e-7)
+  assert_true(permuted_result.constraint_dual.unwrap()[0] <= 1.0e-7)
+  let original_kkt = original
+    .stationarity_at(
+      original_result.x,
+      original_result.constraint_dual.unwrap(),
+    )
+    .unwrap()
+  let permuted_kkt = permuted
+    .stationarity_at(
+      permuted_result.x,
+      permuted_result.constraint_dual.unwrap(),
+    )
+    .unwrap()
+  assert_true(original_kkt[0].abs() < 2.0e-5)
+  assert_true(original_kkt[1].abs() < 2.0e-5)
+  assert_true(permuted_kkt[0].abs() < 2.0e-5)
+  assert_true(permuted_kkt[1].abs() < 2.0e-5)
+  assert_true(
+    original.max_constraint_violation(original_result.x).unwrap() < 2.0e-5,
+  )
+  assert_true(
+    permuted.max_constraint_violation(permuted_result.x).unwrap() < 2.0e-5,
+  )
+}
