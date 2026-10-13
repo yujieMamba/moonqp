@@ -99,6 +99,7 @@ pub(all) struct SolverSettings {
   absolute_tolerance : Double
   relative_tolerance : Double
   max_iterations : Int
+  initial_x : Array[Double]?
 }
 
 ///|
@@ -109,6 +110,7 @@ pub fn SolverSettings::default() -> SolverSettings {
     absolute_tolerance: 1.0e-6,
     relative_tolerance: 1.0e-6,
     max_iterations: 10000,
+    initial_x: None,
   }
 }
 
@@ -197,7 +199,18 @@ pub fn solve(
       )
   }
 
-  let mut x = Array::make(n, 0.0)
+  let mut x = match settings.initial_x {
+    Some(initial_x) => {
+      if initial_x.length() != n || !all_finite(initial_x) {
+        return failure(
+          empty_x,
+          InvalidProblem("initial_x must be finite and match q.length"),
+        )
+      }
+      copy_vector(initial_x)
+    }
+    None => Array::make(n, 0.0)
+  }
   let mut z = project(problem, mat_vec(problem.a, x))
   let y = Array::make(m, 0.0)
   let mut iteration = 0

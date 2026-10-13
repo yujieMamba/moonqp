@@ -66,6 +66,36 @@ test "two-sided bound selects the constrained endpoint" {
 }
 
 ///|
+test "primal warm start is used and validated" {
+  let problem = @moonqp.QpProblem::new([[2.0]], [-4.0], [], [], [])
+  let warm = { ..@moonqp.SolverSettings::default(), initial_x: Some([1.75]), }
+  let result = {
+    let settings = warm
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(result.status is Solved)
+  assert_true((result.x[0] - 2.0).abs() <= 1.0e-4)
+  let wrong_size = {
+    ..@moonqp.SolverSettings::default(),
+    initial_x: Some([1.0, 2.0]),
+  }
+  let non_finite = {
+    ..@moonqp.SolverSettings::default(),
+    initial_x: Some([1.0 / 0.0]),
+  }
+  let wrong_result = {
+    let settings = wrong_size
+    @moonqp.solve(problem, settings~)
+  }
+  let non_finite_result = {
+    let settings = non_finite
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(wrong_result.status is InvalidProblem(_))
+  assert_true(non_finite_result.status is InvalidProblem(_))
+}
+
+///|
 test "numerical objective overflow preserves completed iteration count" {
   let problem = @moonqp.QpProblem::new([[1.0]], [-1.0e200], [], [], [])
   let result = @moonqp.solve(problem)

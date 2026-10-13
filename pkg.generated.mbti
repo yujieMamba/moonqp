@@ -119,6 +119,7 @@ pub(all) struct SolverSettings {
   absolute_tolerance : Double
   relative_tolerance : Double
   max_iterations : Int
+  initial_x : Array[Double]?
 }
 pub fn SolverSettings::default() -> Self
 
