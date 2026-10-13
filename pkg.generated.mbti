@@ -123,6 +123,7 @@ pub(all) struct SolverSettings {
   relative_tolerance : Double
   max_iterations : Int
   initial_x : Array[Double]?
+  initial_y : Array[Double]?
 }
 pub fn SolverSettings::default() -> Self
 

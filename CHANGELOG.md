@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Support optional finite, row-ordered dual warm starts for repeated nearby QP solves; omitted values preserve the zero-dual initialization.
 - Add a one-shot dense matrix solve convenience API while retaining reusable LU factors.
 - Add inverse construction from reusable pivoted LU factors.
 - Add read-only QP model dimension introspection.

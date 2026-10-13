@@ -107,6 +107,7 @@ pub(all) struct SolverSettings {
   relative_tolerance : Double
   max_iterations : Int
   initial_x : Array[Double]?
+  initial_y : Array[Double]?
 }
 
 ///|
@@ -118,6 +119,7 @@ pub fn SolverSettings::default() -> SolverSettings {
     relative_tolerance: 1.0e-6,
     max_iterations: 10000,
     initial_x: None,
+    initial_y: None,
   }
 }
 
@@ -164,6 +166,17 @@ pub fn solve(
     Some(message) => return failure(empty_x, InvalidProblem(message))
     None => ()
   }
+  let m = problem.a.length()
+  match settings.initial_y {
+    Some(initial_y) =>
+      if initial_y.length() != m || !all_finite(initial_y) {
+        return failure(
+          empty_x,
+          InvalidProblem("initial_y must be finite and match A row count"),
+        )
+      }
+    None => ()
+  }
 
   let p = symmetric_copy(problem.p)
   if !is_positive_semidefinite(p) {
@@ -173,7 +186,6 @@ pub fn solve(
     )
   }
   let n = problem.q.length()
-  let m = problem.a.length()
   let rho = settings.rho
   let sigma = settings.sigma
   let system = zero_matrix(n, n)
@@ -218,8 +230,27 @@ pub fn solve(
     }
     None => Array::make(n, 0.0)
   }
-  let mut z = project(problem, mat_vec(problem.a, x))
-  let y = Array::make(m, 0.0)
+  let y = match settings.initial_y {
+    Some(initial_y) => copy_vector(initial_y)
+    None => Array::make(m, 0.0)
+  }
+  let mut z = match settings.initial_y {
+    Some(_) => {
+      let initial_ax = mat_vec(problem.a, x)
+      let projected_input = Array::make(m, 0.0)
+      for row in 0..<m {
+        projected_input[row] = initial_ax[row] + y[row] / rho
+      }
+      if !all_finite(projected_input) {
+        return failure(
+          empty_x,
+          NumericalError("initial dual projection became non-finite"),
+        )
+      }
+      project(problem, projected_input)
+    }
+    None => project(problem, mat_vec(problem.a, x))
+  }
   let mut iteration = 0
   let mut last_primal = 0.0
   let mut last_dual = 0.0

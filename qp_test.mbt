@@ -106,6 +106,59 @@ test "primal warm start is used and validated" {
 }
 
 ///|
+test "dual warm start solves a binding upper-bound problem no slower than cold start" {
+  let negative_infinity = -1.0 / 0.0
+  let problem = @moonqp.QpProblem::new(
+    [[1.0]],
+    [-4.0],
+    [[1.0]],
+    [negative_infinity],
+    [2.0],
+  )
+  let cold = @moonqp.solve(problem)
+  let warm_settings = {
+    ..@moonqp.SolverSettings::default(),
+    initial_y: Some([2.0]),
+  }
+  let warm = {
+    let settings = warm_settings
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(cold.status is Solved)
+  assert_true(warm.status is Solved)
+  assert_true((warm.x[0] - 2.0).abs() <= 2.0e-5)
+  assert_true((warm.constraint_dual.unwrap()[0] - 2.0).abs() <= 2.0e-5)
+  assert_true(warm.primal_residual.unwrap() <= 5.0e-6)
+  assert_true(warm.stationarity_residual.unwrap() <= 5.0e-6)
+  assert_true(warm.iterations <= cold.iterations)
+}
+
+///|
+test "invalid dual warm starts are rejected before iteration" {
+  let positive_infinity = 1.0 / 0.0
+  let negative_infinity = -positive_infinity
+  let nan = positive_infinity - positive_infinity
+  let problem = @moonqp.QpProblem::new([[1.0]], [0.0], [[1.0]], [-1.0], [1.0])
+  let wrong_size = { ..@moonqp.SolverSettings::default(), initial_y: Some([]), }
+  let non_finite_values = [nan, positive_infinity, negative_infinity]
+  let wrong_result = {
+    let settings = wrong_size
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(wrong_result.status is InvalidProblem(_))
+  assert_eq(wrong_result.iterations, 0)
+  for value in non_finite_values {
+    let settings = {
+      ..@moonqp.SolverSettings::default(),
+      initial_y: Some([value]),
+    }
+    let result = @moonqp.solve(problem, settings~)
+    assert_true(result.status is InvalidProblem(_))
+    assert_eq(result.iterations, 0)
+  }
+}
+
+///|
 test "numerical objective overflow preserves completed iteration count" {
   let problem = @moonqp.QpProblem::new([[1.0]], [-1.0e200], [], [], [])
   let result = @moonqp.solve(problem)
