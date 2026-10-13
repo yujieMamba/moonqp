@@ -29,6 +29,202 @@ test "model evaluation reports objective and interval violation" {
 }
 
 ///|
+test "gradient matches the analytic vector and finite differences" {
+  let problem = @moonqp.QpProblem::new(
+    [[4.0, 1.0], [1.0, 2.0]],
+    [-2.0, 3.0],
+    [],
+    [],
+    [],
+  )
+  let x = [0.5, -1.0]
+  let expected = [-1.0, 1.5]
+  let gradient = problem.gradient_at(x).unwrap()
+  assert_eq(gradient, expected)
+  for coordinate in 0..<x.length() {
+    let step = 1.0e-6
+    let plus = [x[0], x[1]]
+    let minus = [x[0], x[1]]
+    plus[coordinate] = plus[coordinate] + step
+    minus[coordinate] = minus[coordinate] - step
+    let finite_difference = (
+        problem.objective_at(plus).unwrap() -
+        problem.objective_at(minus).unwrap()
+      ) /
+      (2.0 * step)
+    assert_true((finite_difference - expected[coordinate]).abs() < 1.0e-7)
+  }
+  gradient[0] = 500.0
+  assert_eq(problem.gradient_at(x), Some(expected))
+  assert_eq(x, [0.5, -1.0])
+}
+
+///|
+test "gradient supports multiple variables with zero cross terms" {
+  let problem = @moonqp.QpProblem::new(
+    [[2.0, 0.0, 0.0], [0.0, 4.0, 0.0], [0.0, 0.0, 6.0]],
+    [1.0, -2.0, 3.0],
+    [],
+    [],
+    [],
+  )
+  assert_eq(problem.gradient_at([2.0, -1.0, 0.5]), Some([5.0, -6.0, 6.0]))
+}
+
+///|
+test "gradient rejects malformed models and invalid candidates" {
+  let positive_infinity = 1.0 / 0.0
+  let nan = positive_infinity - positive_infinity
+  let nonsymmetric = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.5, 1.0]],
+    [0.0, 0.0],
+    [],
+    [],
+    [],
+  )
+  let malformed = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.0]],
+    [0.0, 0.0],
+    [],
+    [],
+    [],
+  )
+  let valid = @moonqp.QpProblem::new([[1.0]], [0.0], [], [], [])
+  assert_true(nonsymmetric.gradient_at([1.0, 2.0]) is None)
+  assert_true(malformed.gradient_at([1.0, 2.0]) is None)
+  assert_true(valid.gradient_at([]) is None)
+  assert_true(valid.gradient_at([nan]) is None)
+  assert_true(valid.gradient_at([positive_infinity]) is None)
+}
+
+///|
+test "gradient rejects product and accumulation overflow" {
+  let product_overflow = @moonqp.QpProblem::new([[1.0e308]], [0.0], [], [], [])
+  let accumulation_overflow = @moonqp.QpProblem::new(
+    [[1.0e308, 1.0e308], [1.0e308, 1.0e308]],
+    [0.0, 0.0],
+    [],
+    [],
+    [],
+  )
+  let q_accumulation_overflow = @moonqp.QpProblem::new(
+    [[1.0e308]],
+    [1.0e308],
+    [],
+    [],
+    [],
+  )
+  assert_true(product_overflow.gradient_at([2.0]) is None)
+  assert_true(accumulation_overflow.gradient_at([1.0, 1.0]) is None)
+  assert_true(q_accumulation_overflow.gradient_at([1.0]) is None)
+}
+
+///|
+test "stationarity matches an analytic vector with row-ordered duals" {
+  let negative_infinity = -1.0 / 0.0
+  let positive_infinity = 1.0 / 0.0
+  let p = [[2.0, 1.0], [1.0, 4.0]]
+  let q = [-1.0, 2.0]
+  let x = [2.0, -1.0]
+  let a = [[1.0, 2.0], [-3.0, 1.0], [0.0, 2.0]]
+  let problem = @moonqp.QpProblem::new(
+    p,
+    q,
+    a,
+    [0.0, negative_infinity, -2.0],
+    [positive_infinity, -7.0, -2.0],
+  )
+  let dual = [-3.0, 2.0, 0.5]
+  assert_eq(problem.stationarity_at(x, dual), Some([-7.0, -3.0]))
+
+  let reordered = @moonqp.QpProblem::new(
+    p,
+    q,
+    [[0.0, 2.0], [1.0, 2.0], [-3.0, 1.0]],
+    [-2.0, 0.0, negative_infinity],
+    [-2.0, positive_infinity, -7.0],
+  )
+  assert_eq(reordered.stationarity_at(x, [0.5, -3.0, 2.0]), Some([-7.0, -3.0]))
+}
+
+///|
+test "stationarity without constraints equals the objective gradient" {
+  let problem = @moonqp.QpProblem::new(
+    [[2.0, 1.0], [1.0, 4.0]],
+    [-1.0, 2.0],
+    [],
+    [],
+    [],
+  )
+  assert_eq(problem.stationarity_at([2.0, -1.0], []), Some([2.0, 0.0]))
+}
+
+///|
+test "stationarity validates models dimensions and finite inputs" {
+  let positive_infinity = 1.0 / 0.0
+  let nan = positive_infinity - positive_infinity
+  let invalid_model = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.5, 1.0]],
+    [0.0, 0.0],
+    [[1.0, 0.0]],
+    [-1.0],
+    [1.0],
+  )
+  let malformed_constraints = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.0, 1.0]],
+    [0.0, 0.0],
+    [[1.0]],
+    [-1.0],
+    [1.0],
+  )
+  let problem = @moonqp.QpProblem::new([[1.0]], [0.0], [[1.0]], [-1.0], [1.0])
+  assert_true(invalid_model.stationarity_at([0.0, 0.0], [0.0]) is None)
+  assert_true(malformed_constraints.stationarity_at([0.0, 0.0], [0.0]) is None)
+  assert_true(problem.stationarity_at([], [0.0]) is None)
+  assert_true(problem.stationarity_at([0.0], []) is None)
+  assert_true(problem.stationarity_at([nan], [0.0]) is None)
+  assert_true(problem.stationarity_at([positive_infinity], [0.0]) is None)
+  assert_true(problem.stationarity_at([0.0], [nan]) is None)
+  assert_true(problem.stationarity_at([0.0], [positive_infinity]) is None)
+}
+
+///|
+test "stationarity rejects product and accumulation overflow" {
+  let positive_infinity = 1.0 / 0.0
+  let product_overflow = @moonqp.QpProblem::new(
+    [[1.0]],
+    [0.0],
+    [[1.0e308]],
+    [-positive_infinity],
+    [positive_infinity],
+  )
+  let accumulation_overflow = @moonqp.QpProblem::new(
+    [[1.0]],
+    [0.0],
+    [[1.0e308], [1.0e308]],
+    [-positive_infinity, -positive_infinity],
+    [positive_infinity, positive_infinity],
+  )
+  let gradient_overflow = @moonqp.QpProblem::new([[1.0e308]], [0.0], [], [], [])
+  assert_true(product_overflow.stationarity_at([0.0], [2.0]) is None)
+  assert_true(accumulation_overflow.stationarity_at([0.0], [1.0, 1.0]) is None)
+  assert_true(gradient_overflow.stationarity_at([2.0], []) is None)
+}
+
+///|
+test "stationarity result is detached and leaves input arrays unchanged" {
+  let problem = @moonqp.QpProblem::new([[2.0]], [-1.0], [[3.0]], [-1.0], [1.0])
+  let x = [2.0]
+  let dual = [-0.5]
+  let stationarity = problem.stationarity_at(x, dual).unwrap()
+  assert_eq(stationarity, [1.5])
+  stationarity[0] = 500.0
+  assert_eq(x, [2.0])
+  assert_eq(dual, [-0.5])
+  assert_eq(problem.stationarity_at(x, dual), Some([1.5]))
+}
+
+///|
 test "constraint values preserve row order and do not expose model storage" {
   let problem = @moonqp.QpProblem::new(
     [[1.0, 0.0], [0.0, 1.0]],

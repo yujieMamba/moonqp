@@ -61,6 +61,75 @@ pub fn QpProblem::constraint_values_at(
 }
 
 ///|
+/// Evaluate the objective gradient `P * x + q` for the model's symmetric `P`.
+/// Invalid model data, a wrong vector length, non-finite input, or any
+/// non-finite product or accumulation return `None`.
+pub fn QpProblem::gradient_at(
+  self : QpProblem,
+  x : Array[Double],
+) -> Array[Double]? {
+  match validate_problem(self) {
+    Some(_) => return None
+    None => ()
+  }
+  let n = self.q.length()
+  if x.length() != n || !all_finite(x) {
+    return None
+  }
+  let gradient = Array::make(n, 0.0)
+  for row in 0..<n {
+    let mut value = self.q[row]
+    for col in 0..<n {
+      let product = self.p[row][col] * x[col]
+      if !is_finite(product) {
+        return None
+      }
+      value = value + product
+      if !is_finite(value) {
+        return None
+      }
+    }
+    gradient[row] = value
+  }
+  Some(gradient)
+}
+
+///|
+/// Evaluate the KKT stationarity vector `P * x + q + A' * constraint_dual`.
+/// Multipliers use the solver convention: negative at active lower bounds,
+/// positive at active upper bounds, and unrestricted for equality rows. Invalid
+/// model data, dimensions, non-finite inputs, or non-finite arithmetic return
+/// `None`; the returned vector is detached from the model.
+pub fn QpProblem::stationarity_at(
+  self : QpProblem,
+  x : Array[Double],
+  constraint_dual : Array[Double],
+) -> Array[Double]? {
+  let stationarity = match self.gradient_at(x) {
+    Some(value) => value
+    None => return None
+  }
+  let row_count = self.a.length()
+  if constraint_dual.length() != row_count || !all_finite(constraint_dual) {
+    return None
+  }
+  for row in 0..<row_count {
+    for col in 0..<stationarity.length() {
+      let product = self.a[row][col] * constraint_dual[row]
+      if !is_finite(product) {
+        return None
+      }
+      let value = stationarity[col] + product
+      if !is_finite(value) {
+        return None
+      }
+      stationarity[col] = value
+    }
+  }
+  Some(stationarity)
+}
+
+///|
 /// Evaluate the quadratic objective at a candidate vector. Invalid model
 /// data, a wrong vector length, non-finite values, or arithmetic overflow
 /// return `None`.

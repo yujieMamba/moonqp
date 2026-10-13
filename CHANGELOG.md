@@ -4,6 +4,8 @@
 
 - Add column-wise multi-right-hand-side solves to reusable LU and Cholesky factors without refactorization.
 - Tighten the Jacobi PSD eigenvalue cutoff to `1e-14 * max_abs(P)`, rejecting material negative curvature while retaining roundoff tolerance for rank-deficient PSD inputs.
+- Add `QpProblem::stationarity_at` for detached KKT stationarity-vector evaluation with row-ordered duals, documented multiplier signs, and checked inputs/overflow.
+- Add `QpProblem::gradient_at` for detached decision-space `P x + q` evaluation with checked model symmetry, dimensions, finite inputs, and arithmetic overflow.
 - Add `QpProblem::constraint_values_at` for detached, row-ordered `A x` evaluation with checked dimensions, finite inputs, and arithmetic overflow.
 - Support optional finite, row-ordered dual warm starts for repeated nearby QP solves; omitted values preserve the zero-dual initialization.
 - Add a one-shot dense matrix solve convenience API while retaining reusable LU factors.

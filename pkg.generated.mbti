@@ -97,9 +97,11 @@ pub struct QpProblem {
 }
 pub fn QpProblem::constraint_values_at(Self, Array[Double]) -> Array[Double]?
 pub fn QpProblem::dimensions(Self) -> (Int, Int)
+pub fn QpProblem::gradient_at(Self, Array[Double]) -> Array[Double]?
 pub fn QpProblem::max_constraint_violation(Self, Array[Double]) -> Double?
 pub fn QpProblem::new(Array[Array[Double]], Array[Double], Array[Array[Double]], Array[Double], Array[Double]) -> Self
 pub fn QpProblem::objective_at(Self, Array[Double]) -> Double?
+pub fn QpProblem::stationarity_at(Self, Array[Double], Array[Double]) -> Array[Double]?
 
 pub(all) struct SolveResult {
   x : Array[Double]
