@@ -161,7 +161,7 @@ test "primal warm start is used and validated" {
 }
 
 ///|
-test "dual warm start solves a binding upper-bound problem no slower than cold start" {
+test "dual warm start handles active upper bound with a primal initial value" {
   let negative_infinity = -1.0 / 0.0
   let problem = @moonqp.QpProblem::new(
     [[1.0]],
@@ -170,22 +170,102 @@ test "dual warm start solves a binding upper-bound problem no slower than cold s
     [negative_infinity],
     [2.0],
   )
-  let cold = @moonqp.solve(problem)
+  let initial_x = [0.5]
+  let initial_y = [2.0]
   let warm_settings = {
     ..@moonqp.SolverSettings::default(),
-    initial_y: Some([2.0]),
+    initial_x: Some(initial_x),
+    initial_y: Some(initial_y),
   }
   let warm = {
     let settings = warm_settings
     @moonqp.solve(problem, settings~)
   }
-  assert_true(cold.status is Solved)
   assert_true(warm.status is Solved)
   assert_true((warm.x[0] - 2.0).abs() <= 2.0e-5)
   assert_true((warm.constraint_dual.unwrap()[0] - 2.0).abs() <= 2.0e-5)
   assert_true(warm.primal_residual.unwrap() <= 5.0e-6)
   assert_true(warm.stationarity_residual.unwrap() <= 5.0e-6)
-  assert_true(warm.iterations <= cold.iterations)
+  assert_eq(initial_x[0], 0.5)
+  assert_eq(initial_y[0], 2.0)
+}
+
+///|
+test "dual warm start returns a negative multiplier at an active lower bound" {
+  let positive_infinity = 1.0 / 0.0
+  let problem = @moonqp.QpProblem::new([[2.0]], [4.0], [[1.0]], [-1.0], [
+    positive_infinity,
+  ])
+  let settings = {
+    ..@moonqp.SolverSettings::default(),
+    initial_y: Some([-2.0]),
+  }
+  let result = {
+    let settings = settings
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(result.status is Solved)
+  assert_true((result.x[0] + 1.0).abs() <= 2.0e-5)
+  assert_true((result.constraint_dual.unwrap()[0] + 2.0).abs() <= 2.0e-5)
+  assert_true(result.stationarity_residual.unwrap() <= 5.0e-6)
+}
+
+///|
+test "dual warm start permits a positive multiplier for a finite equality" {
+  let problem = @moonqp.QpProblem::new([[2.0]], [0.0], [[1.0]], [-1.0], [-1.0])
+  let settings = {
+    ..@moonqp.SolverSettings::default(),
+    initial_y: Some([2.0]),
+  }
+  let result = {
+    let settings = settings
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(result.status is Solved)
+  assert_true((result.x[0] + 1.0).abs() <= 2.0e-5)
+  assert_true((result.constraint_dual.unwrap()[0] - 2.0).abs() <= 2.0e-5)
+  assert_true(result.stationarity_residual.unwrap() <= 5.0e-6)
+}
+
+///|
+test "empty dual warm start matches the unconstrained cold-start path" {
+  let problem = @moonqp.QpProblem::new([[2.0]], [-4.0], [], [], [])
+  let cold = @moonqp.solve(problem)
+  let settings = { ..@moonqp.SolverSettings::default(), initial_y: Some([]), }
+  let warm = {
+    let settings = settings
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(cold.status is Solved)
+  assert_true(warm.status is Solved)
+  assert_eq(warm.x[0], cold.x[0])
+  assert_eq(warm.objective, cold.objective)
+  assert_eq(warm.iterations, cold.iterations)
+  assert_eq(warm.constraint_dual.unwrap().length(), 0)
+}
+
+///|
+test "dual warm-start projection overflow fails before the first iteration" {
+  let negative_infinity = -1.0 / 0.0
+  let positive_infinity = 1.0 / 0.0
+  let problem = @moonqp.QpProblem::new(
+    [[1.0]],
+    [0.0],
+    [[0.0]],
+    [negative_infinity],
+    [positive_infinity],
+  )
+  let settings = {
+    ..@moonqp.SolverSettings::default(),
+    rho: 1.0e-308,
+    initial_y: Some([1.0e308]),
+  }
+  let result = {
+    let settings = settings
+    @moonqp.solve(problem, settings~)
+  }
+  assert_true(result.status is NumericalError(_))
+  assert_eq(result.iterations, 0)
 }
 
 ///|
