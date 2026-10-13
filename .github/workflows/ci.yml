@@ -20,6 +20,8 @@ jobs:
         run: moon version --all
       - name: Check
         run: moon check --target "${{ matrix.target }}" --deny-warn
+      - name: Build
+        run: moon build --target "${{ matrix.target }}"
       - name: Test
         if: matrix.target == 'wasm-gc' || matrix.target == 'js' || matrix.target == 'native'
         run: moon test --target "${{ matrix.target }}"
