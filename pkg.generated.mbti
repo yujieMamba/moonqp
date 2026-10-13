@@ -57,6 +57,7 @@ pub fn DenseMatrix::scale(Self, Double) -> Self?
 pub fn DenseMatrix::select_columns(Self, Array[Int]) -> Self?
 pub fn DenseMatrix::select_rows(Self, Array[Int]) -> Self?
 pub fn DenseMatrix::shape(Self) -> (Int, Int)
+pub fn DenseMatrix::solve(Self, DenseVector) -> DenseVector?
 pub fn DenseMatrix::subtract(Self, Self) -> Self?
 pub fn DenseMatrix::symmetrize(Self) -> Self?
 pub fn DenseMatrix::to_flat(Self) -> Array[Double]

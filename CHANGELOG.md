@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add a one-shot dense matrix solve convenience API while retaining reusable LU factors.
 - Add inverse construction from reusable pivoted LU factors.
 - Add read-only QP model dimension introspection.
 - Support validated primal warm starts for repeated nearby QP solves.

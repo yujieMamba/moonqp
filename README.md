@@ -21,7 +21,7 @@ where `P` must be finite, symmetric, and numerically positive semidefinite. Boun
 
 ## Reusable dense numeric primitives
 
-The same package also exposes finite-valued `DenseMatrix` and `DenseVector` types with copy-safe construction/access, shape-checked arithmetic and products, and norm helpers. `DenseMatrix::lu()` provides a scaled-partial-pivoting factor for general nonsingular square matrices; `DenseMatrix::cholesky()` provides a factor for symmetric positive-definite matrices. Both factors support solves and inverse construction. Invalid shapes, non-finite inputs, singular factors, and arithmetic overflow are returned as `None` rather than silently publishing non-finite results. These routines are dense numerical foundations; sparse storage and sparse factorization are not included.
+The same package also exposes finite-valued `DenseMatrix` and `DenseVector` types with copy-safe construction/access, shape-checked arithmetic and products, and norm helpers. `DenseMatrix::lu()` provides a scaled-partial-pivoting factor for general nonsingular square matrices; `DenseMatrix::cholesky()` provides a factor for symmetric positive-definite matrices. Both factors support reusable solves and inverse construction. `DenseMatrix::solve()` offers a one-shot alternative; callers with repeated right-hand sides should factor once. Invalid shapes, non-finite inputs, singular factors, and arithmetic overflow are returned as `None` rather than silently publishing non-finite results. These routines are dense numerical foundations; sparse storage and sparse factorization are not included.
 ## Examples
 
 Each example is an executable MoonBit package:

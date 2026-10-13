@@ -291,6 +291,17 @@ test "dense LU pivots rows solves and computes determinant" {
       1.0e-12,
     ),
   )
+  let rhs = @moonqp.DenseVector::from_array([4.0, 7.0]).unwrap()
+  assert_true(
+    dense_test_array_close(
+      matrix.solve(rhs).unwrap().to_array(),
+      [1.0, 2.0],
+      1.0e-12,
+    ),
+  )
+  assert_true(
+    matrix.solve(@moonqp.DenseVector::from_array([1.0]).unwrap()) is None,
+  )
   assert_true(dense_test_close(factor.determinant().unwrap(), -2.0, 1.0e-12))
   let inverse = factor.inverse().unwrap()
   assert_true(

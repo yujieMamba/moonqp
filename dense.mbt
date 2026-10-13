@@ -675,6 +675,28 @@ pub fn DenseMatrix::lu(
 }
 
 ///|
+/// Solve a single dense system by factoring this matrix and applying pivoted
+/// LU. For repeated right-hand sides, keep the `DenseLuFactor` returned by
+/// `lu()` and call its `solve` method instead.
+pub fn DenseMatrix::solve(
+  self : DenseMatrix,
+  rhs : DenseVector,
+) -> DenseVector? {
+  if self.row_count != self.column_count || rhs.length() != self.row_count {
+    return None
+  }
+  let factor = match self.lu() {
+    Some(value) => value
+    None => return None
+  }
+  let values = match factor.solve(rhs.to_array()) {
+    Some(value) => value
+    None => return None
+  }
+  DenseVector::from_array(values)
+}
+
+///|
 /// Solve `A x = rhs` using the stored pivoted LU factors.
 pub fn DenseLuFactor::solve(
   self : DenseLuFactor,
