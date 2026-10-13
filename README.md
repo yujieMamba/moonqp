@@ -32,7 +32,7 @@ moon run --target wasm-gc examples/estimation
 moon run --target wasm-gc examples/allocation
 ```
 
-They show a bounded two-step control decision, a constrained linear least-squares estimate expressed as a QP, and a capacity-limited allocation. These are illustrative workflows; they do not imply specialized MPC, statistical-estimation, or scheduling APIs.
+They show a bounded two-step control decision, a constrained linear least-squares estimate expressed as a QP, and a capacity-limited allocation. These are illustrative workflows; they do not imply specialized MPC, statistical-estimation, or scheduling APIs. Each example checks the solver status, expected decision values, and independently evaluated interval feasibility before printing; a regression exits unsuccessfully instead of silently displaying a bad result.
 
 ## Use from MoonBit
 
