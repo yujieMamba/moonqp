@@ -21,6 +21,33 @@ fn main {
   println("u[0]: " + result.x[0].to_string())
   println("u[1]: " + result.x[1].to_string())
   println("objective: " + result.objective.unwrap().to_string())
+
+  // The next MPC cycle changes only the linear cost. Reuse the previous
+  // primal solution and row-ordered constraint dual as a warm start.
+  let updated_problem = @moonqp.QpProblem::new(
+    [[1.5, -0.5], [-0.5, 1.5]],
+    [-0.45, -1.5],
+    [[1.0, 0.0], [0.0, 1.0]],
+    [0.0, 0.0],
+    [0.8, 0.8],
+  )
+  let updated_settings = {
+    ..settings,
+    initial_x: Some(result.x),
+    initial_y: Some(result.constraint_dual.unwrap()),
+  }
+  let updated_result = @moonqp.solve(updated_problem, settings=updated_settings)
+  require_example_solution(
+    updated_problem,
+    updated_result,
+    [17.0 / 30.0, 0.8],
+    "updated MPC",
+  )
+  println("updated neighboring QP (primal/dual warm start)")
+  println("status: " + status_label(updated_result.status))
+  println("u[0]: " + updated_result.x[0].to_string())
+  println("u[1]: " + updated_result.x[1].to_string())
+  println("objective: " + updated_result.objective.unwrap().to_string())
 }
 
 ///|
