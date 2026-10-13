@@ -23,6 +23,7 @@ pub struct DenseLuFactor {
   determinant_sign : Double
 }
 pub fn DenseLuFactor::determinant(Self) -> Double?
+pub fn DenseLuFactor::inverse(Self) -> DenseMatrix?
 pub fn DenseLuFactor::order(Self) -> Int
 pub fn DenseLuFactor::solve(Self, Array[Double]) -> Array[Double]?
 

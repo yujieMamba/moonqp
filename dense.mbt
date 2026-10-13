@@ -713,6 +713,28 @@ pub fn DenseLuFactor::solve(
 }
 
 ///|
+/// Form the inverse by solving against each coordinate vector. Singular or
+/// numerically overflowing results return `None`.
+pub fn DenseLuFactor::inverse(self : DenseLuFactor) -> DenseMatrix? {
+  let inverse = match DenseMatrix::zeros(self.order, self.order) {
+    Some(value) => value
+    None => return None
+  }
+  for j in 0..<self.order {
+    let rhs = Array::make(self.order, 0.0)
+    rhs[j] = 1.0
+    let column = match self.solve(rhs) {
+      Some(value) => value
+      None => return None
+    }
+    for i in 0..<self.order {
+      inverse.values[i * self.order + j] = column[i]
+    }
+  }
+  Some(inverse)
+}
+
+///|
 /// Compute the determinant from the factorization; overflow returns `None`.
 pub fn DenseLuFactor::determinant(self : DenseLuFactor) -> Double? {
   let mut result = self.determinant_sign

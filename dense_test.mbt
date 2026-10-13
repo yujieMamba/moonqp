@@ -292,6 +292,14 @@ test "dense LU pivots rows solves and computes determinant" {
     ),
   )
   assert_true(dense_test_close(factor.determinant().unwrap(), -2.0, 1.0e-12))
+  let inverse = factor.inverse().unwrap()
+  assert_true(
+    dense_test_matrix_close(
+      matrix.multiply(inverse).unwrap(),
+      [[1.0, 0.0], [0.0, 1.0]],
+      1.0e-12,
+    ),
+  )
   assert_true(factor.solve([1.0]) is None)
   assert_true(factor.solve([1.0, 1.0 / 0.0]) is None)
 
