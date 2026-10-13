@@ -20,6 +20,7 @@ test "model evaluation reports objective and interval violation" {
     [0.0],
     [1.0],
   )
+  assert_eq(problem.dimensions(), (2, 1))
   assert_true((problem.objective_at([1.0, 1.0]).unwrap() + 3.0).abs() < 1.0e-12)
   assert_eq(problem.max_constraint_violation([1.0, 1.0]), Some(1.0))
   assert_eq(problem.max_constraint_violation([0.0, 0.0]), Some(0.0))

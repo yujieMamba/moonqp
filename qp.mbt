@@ -31,6 +31,13 @@ pub fn QpProblem::new(
 }
 
 ///|
+/// Return `(decision_variable_count, constraint_row_count)` without exposing
+/// the model's mutable backing arrays.
+pub fn QpProblem::dimensions(self : QpProblem) -> (Int, Int) {
+  (self.q.length(), self.a.length())
+}
+
+///|
 /// Evaluate the quadratic objective at a candidate vector. Invalid model
 /// data, a wrong vector length, non-finite values, or arithmetic overflow
 /// return `None`.

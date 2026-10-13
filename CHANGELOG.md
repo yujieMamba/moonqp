@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add read-only QP model dimension introspection.
 - Support validated primal warm starts for repeated nearby QP solves.
 - Expose row-constraint Lagrange multipliers with a documented lower/upper sign convention.
 - Preserve completed iteration counts when a later numerical calculation fails.
