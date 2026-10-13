@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Preserve completed iteration counts when a later numerical calculation fails.
 - Added candidate objective and maximum interval-violation evaluators on `QpProblem`.
 - Made `QpProblem` opaque and copy-safe so caller mutation cannot alter a constructed problem.
 - Added a dense-first MoonBit solver for continuous convex quadratic programs with linear interval constraints.

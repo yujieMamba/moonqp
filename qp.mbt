@@ -207,7 +207,11 @@ pub fn solve(
     let z_old = copy_vector(z)
     let ax_old = mat_vec(problem.a, x)
     if !all_finite(ax_old) {
-      return failure(x, NumericalError("constraint product became non-finite"))
+      return failure_after(
+        x,
+        NumericalError("constraint product became non-finite"),
+        iteration,
+      )
     }
     let rhs = Array::make(n, 0.0)
     for i in 0..<n {
@@ -220,24 +224,30 @@ pub fn solve(
     let next_x = match cholesky_solve(factor, rhs) {
       Some(value) => value
       None =>
-        return failure(
+        return failure_after(
           x,
           NumericalError("dense linear solve became non-finite"),
+          iteration,
         )
     }
     x = next_x
     let ax = mat_vec(problem.a, x)
     if !all_finite(ax) {
-      return failure(x, NumericalError("constraint product became non-finite"))
+      return failure_after(
+        x,
+        NumericalError("constraint product became non-finite"),
+        iteration,
+      )
     }
     let projected_input = Array::make(m, 0.0)
     for row in 0..<m {
       projected_input[row] = ax[row] + y[row] / rho
     }
     if !all_finite(projected_input) {
-      return failure(
+      return failure_after(
         x,
         NumericalError("interval projection input became non-finite"),
+        iteration,
       )
     }
     z = project(problem, projected_input)
@@ -245,7 +255,11 @@ pub fn solve(
       y[row] = y[row] + rho * (ax[row] - z[row])
     }
     if !all_finite(y) {
-      return failure(x, NumericalError("dual iterate became non-finite"))
+      return failure_after(
+        x,
+        NumericalError("dual iterate became non-finite"),
+        iteration,
+      )
     }
 
     let mut primal = 0.0
@@ -294,9 +308,10 @@ pub fn solve(
       !is_finite(last_dual) ||
       !is_finite(primal_scale) ||
       !is_finite(dual_scale) {
-      return failure(
+      return failure_after(
         x,
         NumericalError("residual calculation became non-finite"),
+        iteration,
       )
     }
 
@@ -313,7 +328,11 @@ pub fn solve(
 
   let objective = evaluate_objective(p, problem.q, x)
   if !is_finite(objective) {
-    return failure(x, NumericalError("objective became non-finite"))
+    return failure_after(
+      x,
+      NumericalError("objective became non-finite"),
+      iteration,
+    )
   }
   {
     x,
@@ -328,10 +347,19 @@ pub fn solve(
 
 ///|
 fn failure(x : Array[Double], status : SolveStatus) -> SolveResult {
+  failure_after(x, status, 0)
+}
+
+///|
+fn failure_after(
+  x : Array[Double],
+  status : SolveStatus,
+  iterations : Int,
+) -> SolveResult {
   {
     x,
     objective: None,
-    iterations: 0,
+    iterations,
     primal_residual: None,
     dual_residual: None,
     stationarity_residual: None,

@@ -64,6 +64,15 @@ test "two-sided bound selects the constrained endpoint" {
 }
 
 ///|
+test "numerical objective overflow preserves completed iteration count" {
+  let problem = @moonqp.QpProblem::new([[1.0]], [-1.0e200], [], [], [])
+  let result = @moonqp.solve(problem)
+  assert_true(result.status is NumericalError(_))
+  assert_eq(result.iterations, 1)
+  assert_true(result.objective is None)
+}
+
+///|
 test "iteration exhaustion is not reported as infeasibility" {
   let problem = @moonqp.QpProblem::new([[2.0]], [-4.0], [], [], [])
   let settings = {
