@@ -296,14 +296,12 @@ pub fn solve(
           primal,
           max_double(0.0, problem.lower[row] - ax[row]),
         )
-        primal_scale = max_double(primal_scale, problem.lower[row].abs())
       }
       if !problem.upper[row].is_pos_inf() {
         primal = max_double(
           primal,
           max_double(0.0, ax[row] - problem.upper[row]),
         )
-        primal_scale = max_double(primal_scale, problem.upper[row].abs())
       }
     }
     let px = mat_vec(p, x)

@@ -67,6 +67,15 @@ test "two-sided bound selects the constrained endpoint" {
 }
 
 ///|
+test "loose large upper bound does not hide lower-bound violation" {
+  let problem = @moonqp.QpProblem::new([[1.0]], [0.0], [[1.0]], [1.0], [1.0e12])
+  let result = @moonqp.solve(problem)
+  assert_true(result.status is Solved)
+  let independently_measured_lower_violation = (1.0 - result.x[0]).max(0.0)
+  assert_true(independently_measured_lower_violation <= 2.0e-5)
+}
+
+///|
 test "primal warm start is used and validated" {
   let problem = @moonqp.QpProblem::new([[2.0]], [-4.0], [], [], [])
   let warm = { ..@moonqp.SolverSettings::default(), initial_x: Some([1.75]), }
