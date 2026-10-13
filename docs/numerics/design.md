@@ -15,6 +15,8 @@ The solver checks interval feasibility and KKT stationarity using absolute-plus-
 
 ## Numerical acceptance
 
+The convexity check uses Jacobi diagonalization with a scale-relative computed-eigenvalue cutoff of `1e-14 * max_abs(P)` and an off-diagonal rotation cutoff of `1e-15 * max_abs(P)`. The eigenvalue band is intended only to absorb floating-point roundoff (including a slightly negative computed eigenvalue for a rounded rank-deficient PSD matrix); it is not a mathematical PSD certificate. A negative eigenvalue inside that band is numerically treated as zero, so inputs with curvature below the resolution of the tolerance cannot be distinguished from roundoff. Material negative curvature such as `-5e-11` relative to a unit-scale diagonal is rejected, independently of uniform matrix scaling. The all-zero and rank-deficient PSD cases remain supported.
+
 Tests cover analytically solvable unconstrained, equality, interval, one-sided-bound and singular-PSD cases, zero constraint rows, malformed dimensions, nonsymmetric/indefinite `P`, invalid bounds and budget exhaustion. Tests independently recompute representative objective, feasibility and stationarity values instead of relying only on solver diagnostics. Tolerance behavior and ill-conditioning remain explicit limitations; no sparse-scale or OSQP-performance guarantee is made.
 
 

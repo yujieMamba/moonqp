@@ -543,8 +543,12 @@ fn symmetric_copy(matrix : Array[Array[Double]]) -> Array[Array[Double]] {
 fn is_positive_semidefinite(matrix : Array[Array[Double]]) -> Bool {
   let n = matrix.length()
   let work = symmetric_copy(matrix)
-  let tolerance = 1.0e-10 * max_abs_matrix(work)
-  let rotation_tolerance = 1.0e-15 * max_abs_matrix(work)
+  let scale = max_abs_matrix(work)
+  // The eigenvalue cutoff absorbs only roundoff-sized residuals. This is a
+  // numerical PSD test, not a proof that the exact input has no negative
+  // curvature; materially negative eigenvalues must remain outside the band.
+  let tolerance = 1.0e-14 * scale
+  let rotation_tolerance = 1.0e-15 * scale
   let mut sweep = 0
   let mut converged = false
   while sweep < 64 && !converged {

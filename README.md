@@ -9,7 +9,7 @@ minimize    1/2 xᵀ P x + qᵀ x
 subject to  lower ≤ A x ≤ upper
 ```
 
-where `P` must be finite, symmetric, and numerically positive semidefinite. Bounds can be one-sided unbounded by using negative infinity in `lower` or positive infinity in `upper`; NaN and opposite-signed infinities are rejected. The current implementation uses a dense ADMM splitting with interval projection and a Cholesky factorization of the per-solve normal matrix. It is intended as a reusable solver core for small-to-medium control, estimation, and resource-allocation models—not as a sparse or large-scale solver.
+where `P` must be finite, symmetric, and numerically positive semidefinite. The Jacobi PSD check uses a computed-eigenvalue cutoff of `1e-14 × max_abs(P)` to absorb roundoff; it is not a proof of exact mathematical PSD, and materially negative curvature (for example, `-5e-11` relative to a unit-scale diagonal) is rejected. Bounds can be one-sided unbounded by using negative infinity in `lower` or positive infinity in `upper`; NaN and opposite-signed infinities are rejected. The current implementation uses a dense ADMM splitting with interval projection and a Cholesky factorization of the per-solve normal matrix. It is intended as a reusable solver core for small-to-medium control, estimation, and resource-allocation models—not as a sparse or large-scale solver.
 
 ## Scope and status semantics
 

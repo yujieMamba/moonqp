@@ -318,6 +318,49 @@ test "rank-deficient positive semidefinite objective is accepted" {
 }
 
 ///|
+test "small negative curvature relative to matrix scale is rejected" {
+  let problem = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.0, -5.0e-11]],
+    [0.0, 0.0],
+    [],
+    [],
+    [],
+  )
+  let result = @moonqp.solve(problem)
+  assert_true(result.status is InvalidProblem(_))
+}
+
+///|
+test "negative curvature rejection is invariant under whole-matrix scaling" {
+  for scale in [1.0e-100, 1.0, 1.0e100] {
+    let problem = @moonqp.QpProblem::new(
+      [[scale, 0.0], [0.0, -5.0e-11 * scale]],
+      [0.0, 0.0],
+      [],
+      [],
+      [],
+    )
+    let result = @moonqp.solve(problem)
+    assert_true(result.status is InvalidProblem(_))
+  }
+}
+
+///|
+test "rounded rank-one positive semidefinite objective remains accepted" {
+  // These binary floating-point coefficients approximate the exact outer
+  // product [1, 0.1] * [1, 0.1]^T; their determinant rounds slightly negative.
+  let problem = @moonqp.QpProblem::new(
+    [[1.0, 0.1], [0.1, 0.01]],
+    [0.0, 0.0],
+    [],
+    [],
+    [],
+  )
+  let result = @moonqp.solve(problem)
+  assert_true(result.status is Solved)
+}
+
+///|
 test "small-scale indefinite objective is not hidden by absolute tolerance" {
   let problem = @moonqp.QpProblem::new([[-1.0e-20]], [0.0], [], [], [])
   let result = @moonqp.solve(problem)
