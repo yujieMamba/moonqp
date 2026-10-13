@@ -14,6 +14,7 @@ pub struct CholeskyFactor {
 pub fn CholeskyFactor::inverse(Self) -> DenseMatrix?
 pub fn CholeskyFactor::order(Self) -> Int
 pub fn CholeskyFactor::solve(Self, Array[Double]) -> Array[Double]?
+pub fn CholeskyFactor::solve_many(Self, DenseMatrix) -> DenseMatrix?
 
 pub struct DenseLuFactor {
   order : Int
@@ -26,6 +27,7 @@ pub fn DenseLuFactor::determinant(Self) -> Double?
 pub fn DenseLuFactor::inverse(Self) -> DenseMatrix?
 pub fn DenseLuFactor::order(Self) -> Int
 pub fn DenseLuFactor::solve(Self, Array[Double]) -> Array[Double]?
+pub fn DenseLuFactor::solve_many(Self, DenseMatrix) -> DenseMatrix?
 
 pub struct DenseMatrix {
   row_count : Int

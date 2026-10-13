@@ -328,6 +328,42 @@ test "dense LU pivots rows solves and computes determinant" {
 }
 
 ///|
+test "dense LU reuses pivoted factors for column-wise multiple right-hand sides" {
+  let matrix = @moonqp.DenseMatrix::from_rows([[0.0, 2.0], [1.0, 3.0]]).unwrap()
+  let factor = matrix.lu().unwrap()
+  let source = [-2.0, 6.0, -2.0, 11.0]
+  let rhs = @moonqp.DenseMatrix::from_flat(2, 2, source).unwrap()
+  source[0] = 500.0
+  assert_true(dense_test_matrix_close(rhs, [[-2.0, 6.0], [-2.0, 11.0]], 0.0))
+
+  let solution = factor.solve_many(rhs).unwrap()
+  assert_eq(solution.shape(), (2, 2))
+  assert_true(
+    dense_test_matrix_close(solution, [[1.0, 2.0], [-1.0, 3.0]], 1.0e-12),
+  )
+  let exported = solution.to_flat()
+  exported[0] = 500.0
+  assert_eq(solution.get(0, 0), Some(1.0))
+  assert_true(
+    factor.solve_many(@moonqp.DenseMatrix::zeros(1, 2).unwrap()) is None,
+  )
+  assert_eq(
+    factor
+    .solve_many(@moonqp.DenseMatrix::zeros(2, 0).unwrap())
+    .unwrap()
+    .shape(),
+    (2, 0),
+  )
+
+  let small_factor = @moonqp.DenseMatrix::from_rows([[1.0e-100]])
+    .unwrap()
+    .lu()
+    .unwrap()
+  let large_rhs = @moonqp.DenseMatrix::from_rows([[1.0e308]]).unwrap()
+  assert_true(small_factor.solve_many(large_rhs) is None)
+}
+
+///|
 test "dense Cholesky factors SPD matrices solves and forms inverse" {
   let matrix = @moonqp.DenseMatrix::from_rows([[4.0, 2.0], [2.0, 3.0]]).unwrap()
   let factor = matrix.cholesky().unwrap()
@@ -364,6 +400,38 @@ test "dense Cholesky factors SPD matrices solves and forms inverse" {
   assert_true(
     @moonqp.DenseMatrix::from_rows([[1.0, 2.0]]).unwrap().cholesky() is None,
   )
+}
+
+///|
+test "dense Cholesky reuses factors for column-wise multiple right-hand sides" {
+  let matrix = @moonqp.DenseMatrix::from_rows([[4.0, 2.0], [2.0, 3.0]]).unwrap()
+  let factor = matrix.cholesky().unwrap()
+  let source_rows = [[2.0, 14.0], [-1.0, 13.0]]
+  let rhs = @moonqp.DenseMatrix::from_rows(source_rows).unwrap()
+  source_rows[0][0] = 500.0
+
+  let solution = factor.solve_many(rhs).unwrap()
+  assert_eq(solution.shape(), (2, 2))
+  assert_true(
+    dense_test_matrix_close(solution, [[1.0, 2.0], [-1.0, 3.0]], 1.0e-12),
+  )
+  assert_true(
+    factor.solve_many(@moonqp.DenseMatrix::zeros(1, 1).unwrap()) is None,
+  )
+  assert_eq(
+    factor
+    .solve_many(@moonqp.DenseMatrix::zeros(2, 0).unwrap())
+    .unwrap()
+    .shape(),
+    (2, 0),
+  )
+
+  let small_factor = @moonqp.DenseMatrix::from_rows([[1.0e-100]])
+    .unwrap()
+    .cholesky()
+    .unwrap()
+  let large_rhs = @moonqp.DenseMatrix::from_rows([[1.0e308]]).unwrap()
+  assert_true(small_factor.solve_many(large_rhs) is None)
 }
 
 ///|

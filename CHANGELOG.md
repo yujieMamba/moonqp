@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add column-wise multi-right-hand-side solves to reusable LU and Cholesky factors without refactorization.
 - Tighten the Jacobi PSD eigenvalue cutoff to `1e-14 * max_abs(P)`, rejecting material negative curvature while retaining roundoff tolerance for rank-deficient PSD inputs.
 - Add `QpProblem::constraint_values_at` for detached, row-ordered `A x` evaluation with checked dimensions, finite inputs, and arithmetic overflow.
 - Support optional finite, row-ordered dual warm starts for repeated nearby QP solves; omitted values preserve the zero-dual initialization.

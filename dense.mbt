@@ -735,6 +735,37 @@ pub fn DenseLuFactor::solve(
 }
 
 ///|
+/// Solve a matrix of right-hand sides, one vector per column, using the stored
+/// pivoted LU factors. The result has the same shape; shape mismatch or
+/// non-finite arithmetic returns `None`. The factorization is reused as-is.
+pub fn DenseLuFactor::solve_many(
+  self : DenseLuFactor,
+  rhs : DenseMatrix,
+) -> DenseMatrix? {
+  if rhs.row_count != self.order {
+    return None
+  }
+  let result = match DenseMatrix::zeros(self.order, rhs.column_count) {
+    Some(value) => value
+    None => return None
+  }
+  for column in 0..<rhs.column_count {
+    let column_rhs = Array::make(self.order, 0.0)
+    for row in 0..<self.order {
+      column_rhs[row] = rhs.values[row * rhs.column_count + column]
+    }
+    let solution = match self.solve(column_rhs) {
+      Some(value) => value
+      None => return None
+    }
+    for row in 0..<self.order {
+      result.values[row * rhs.column_count + column] = solution[row]
+    }
+  }
+  Some(result)
+}
+
+///|
 /// Form the inverse by solving against each coordinate vector. Singular or
 /// numerically overflowing results return `None`.
 pub fn DenseLuFactor::inverse(self : DenseLuFactor) -> DenseMatrix? {
@@ -846,6 +877,37 @@ pub fn CholeskyFactor::solve(
     result[i] = value / self.lower[i][i]
     if !dense_finite(result[i]) {
       return None
+    }
+  }
+  Some(result)
+}
+
+///|
+/// Solve a matrix of right-hand sides, one vector per column, using the stored
+/// Cholesky factor. The result has the same shape; shape mismatch or
+/// non-finite arithmetic returns `None`. The factorization is reused as-is.
+pub fn CholeskyFactor::solve_many(
+  self : CholeskyFactor,
+  rhs : DenseMatrix,
+) -> DenseMatrix? {
+  if rhs.row_count != self.order {
+    return None
+  }
+  let result = match DenseMatrix::zeros(self.order, rhs.column_count) {
+    Some(value) => value
+    None => return None
+  }
+  for column in 0..<rhs.column_count {
+    let column_rhs = Array::make(self.order, 0.0)
+    for row in 0..<self.order {
+      column_rhs[row] = rhs.values[row * rhs.column_count + column]
+    }
+    let solution = match self.solve(column_rhs) {
+      Some(value) => value
+      None => return None
+    }
+    for row in 0..<self.order {
+      result.values[row * rhs.column_count + column] = solution[row]
     }
   }
   Some(result)
