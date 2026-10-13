@@ -51,3 +51,15 @@ Audit date: 2026-10-13 (Asia/Shanghai). This document records the locally reprod
 ## Remote handoff still required
 
 No remote has been added, and no repository creation, push, tag, Release, or other remote write has occurred. Immediately before the first remote write, run both `gh auth status` and `gh api user`; proceed only if the active account is exactly `yujieMamba`. If it differs, stop and request web authorization; do not switch accounts. After push, verify public visibility, default branch, commit attribution, permissions, and a green CI run, then create a GitHub Release and update this section with its verified links. MoonCakes publication is deliberately not performed here and remains a participant action.
+
+## Remote delivery verification — 2026-10-13 (Asia/Shanghai)
+
+This append-only addendum supersedes the earlier pending-remote statements for the delivery state recorded here; the pre-remote local test inventory above remains a historical record.
+
+- Public repository: https://github.com/yujieMamba/moonqp. GitHub API verified `visibility=public`, `default_branch=main`, and administrator/push permission for the verified account. The pushed `main` update was a fast-forward from `bf47765c3cc2b72622517e781443544ba7de4ea7` to `33d97f9d2cb2c6a06ad02f5f747af0a73eece805`.
+- Account isolation: before the push, a short-lived process selected the saved `yujieMamba` credential without switching the GitHub CLI active account. `gh auth status` identified `yujieMamba (GH_TOKEN)` and `gh api user` returned the exact login. Git HTTPS used a command-scoped `gh auth git-credential` helper; no token was printed or stored, and no global Git identity or persistent credential-helper setting was changed.
+- At commit `33d97f9`, all 24 raw commits had author and committer `LuoYunze06 <238675390+LuoYunze06@users.noreply.github.com>`. The conservative inventory above already identifies 20 independently reviewable commits meeting the participant's threshold and excludes `b587fabe1b9fef387f8710ed1ab4a5559aa4a5b7` from that count; the later MoonBit compatibility and CI fixes are not needed to reach the minimum.
+- Hosted CI for `33d97f9` passed in full: https://github.com/yujieMamba/moonqp/actions/runs/38400239871 . The `wasm-gc`, `wasm`, `js`, `native`, and format/interface/examples jobs all concluded `success`. Native was verified by Ubuntu CI, not claimed as a local Windows test.
+- The outside-Git Chinese application is `C:/Users/42673/Desktop/工作区/MoonQP-申报书.md`; `scripts/check_submission.py --strict` passed (33 lines, 1,446 characters). It remains outside the repository.
+- Release gate: this audit addendum is a real repository documentation change, so it must be committed and pushed, and its resulting `main` SHA must receive a complete green CI run before it can be the `v0.1.0` source Release target. Planned Release page: https://github.com/yujieMamba/moonqp/releases/tag/v0.1.0. At the time this addendum was written, that tag and Release had not yet been created.
+- MoonCakes publication: not performed; it remains a separate manual participant action.
