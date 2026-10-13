@@ -33,7 +33,7 @@ pub fn QpProblem::new(
 ///|
 /// Return `(decision_variable_count, constraint_row_count)` without exposing
 /// the model's mutable backing arrays.
-pub fn QpProblem::dimensions(self : QpProblem) -> (Int, Int) {
+pub fn QpProblem::dimensions(self : QpProblem) -> (Int32, Int32) {
   (self.q.length(), self.a.length())
 }
 
@@ -197,7 +197,7 @@ pub(all) struct SolverSettings {
   sigma : Double
   absolute_tolerance : Double
   relative_tolerance : Double
-  max_iterations : Int
+  max_iterations : Int32
   initial_x : Array[Double]?
   initial_y : Array[Double]?
 }
@@ -234,7 +234,7 @@ pub(all) struct SolveResult {
   x : Array[Double]
   objective : Double?
   constraint_dual : Array[Double]?
-  iterations : Int
+  iterations : Int32
   primal_residual : Double?
   dual_residual : Double?
   stationarity_residual : Double?
@@ -246,7 +246,7 @@ pub(all) struct SolveResult {
 /// claim is made when the iteration limit is reached.
 pub fn solve(
   problem : QpProblem,
-  settings? : SolverSettings = SolverSettings::default(),
+  settings~ : SolverSettings = SolverSettings::default(),
 ) -> SolveResult {
   let n = problem.q.length()
   let empty_x = Array::make(n, 0.0)
@@ -499,7 +499,7 @@ fn failure(x : Array[Double], status : SolveStatus) -> SolveResult {
 fn failure_after(
   x : Array[Double],
   status : SolveStatus,
-  iterations : Int,
+  iterations : Int32,
 ) -> SolveResult {
   {
     x,
@@ -774,7 +774,7 @@ fn mat_vec(
 fn transpose_mat_vec(
   matrix : Array[Array[Double]],
   vector : Array[Double],
-  n : Int,
+  n : Int32,
 ) -> Array[Double] {
   let result = Array::make(n, 0.0)
   for i in 0..<matrix.length() {
@@ -872,7 +872,7 @@ fn max_double(left : Double, right : Double) -> Double {
 }
 
 ///|
-fn zero_matrix(rows : Int, columns : Int) -> Array[Array[Double]] {
+fn zero_matrix(rows : Int32, columns : Int32) -> Array[Array[Double]] {
   let result = Array::make(rows, Array::make(0, 0.0))
   for i in 0..<rows {
     result[i] = Array::make(columns, 0.0)

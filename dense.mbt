@@ -3,8 +3,8 @@
 /// input; operations that can overflow or receive incompatible shapes return
 /// `None` rather than publishing a non-finite result.
 pub struct DenseMatrix {
-  row_count : Int
-  column_count : Int
+  row_count : Int32
+  column_count : Int32
   values : Array[Double]
 }
 
@@ -17,9 +17,9 @@ pub struct DenseVector {
 ///|
 /// A reusable LU factorization with scaled partial pivoting.
 pub struct DenseLuFactor {
-  order : Int
+  order : Int32
   factors : Array[Array[Double]]
-  permutation : Array[Int]
+  permutation : Array[Int32]
   pivot_threshold : Double
   determinant_sign : Double
 }
@@ -28,7 +28,7 @@ pub struct DenseLuFactor {
 /// A reusable lower-triangular Cholesky factor for a symmetric positive
 /// definite matrix.
 pub struct CholeskyFactor {
-  order : Int
+  order : Int32
   lower : Array[Array[Double]]
 }
 
@@ -61,8 +61,8 @@ pub fn DenseMatrix::from_rows(rows : Array[Array[Double]]) -> DenseMatrix? {
 ///|
 /// Construct a finite matrix from a flat row-major buffer, copying the buffer.
 pub fn DenseMatrix::from_flat(
-  row_count : Int,
-  column_count : Int,
+  row_count : Int32,
+  column_count : Int32,
   values : Array[Double],
 ) -> DenseMatrix? {
   if row_count < 0 || column_count < 0 {
@@ -86,7 +86,10 @@ pub fn DenseMatrix::from_flat(
 
 ///|
 /// Construct a zero matrix. Negative or unrepresentably large shapes fail.
-pub fn DenseMatrix::zeros(row_count : Int, column_count : Int) -> DenseMatrix? {
+pub fn DenseMatrix::zeros(
+  row_count : Int32,
+  column_count : Int32,
+) -> DenseMatrix? {
   if row_count < 0 || column_count < 0 {
     return None
   }
@@ -102,7 +105,7 @@ pub fn DenseMatrix::zeros(row_count : Int, column_count : Int) -> DenseMatrix? {
 
 ///|
 /// Construct an identity matrix of the requested order.
-pub fn DenseMatrix::identity(order : Int) -> DenseMatrix? {
+pub fn DenseMatrix::identity(order : Int32) -> DenseMatrix? {
   if order < 0 {
     return None
   }
@@ -117,23 +120,27 @@ pub fn DenseMatrix::identity(order : Int) -> DenseMatrix? {
 }
 
 ///|
-pub fn DenseMatrix::rows(self : DenseMatrix) -> Int {
+pub fn DenseMatrix::rows(self : DenseMatrix) -> Int32 {
   self.row_count
 }
 
 ///|
-pub fn DenseMatrix::columns(self : DenseMatrix) -> Int {
+pub fn DenseMatrix::columns(self : DenseMatrix) -> Int32 {
   self.column_count
 }
 
 ///|
-pub fn DenseMatrix::shape(self : DenseMatrix) -> (Int, Int) {
+pub fn DenseMatrix::shape(self : DenseMatrix) -> (Int32, Int32) {
   (self.row_count, self.column_count)
 }
 
 ///|
 /// Return an element only when both indices are in range.
-pub fn DenseMatrix::get(self : DenseMatrix, row : Int, column : Int) -> Double? {
+pub fn DenseMatrix::get(
+  self : DenseMatrix,
+  row : Int32,
+  column : Int32,
+) -> Double? {
   if row < 0 ||
     row >= self.row_count ||
     column < 0 ||
@@ -145,7 +152,7 @@ pub fn DenseMatrix::get(self : DenseMatrix, row : Int, column : Int) -> Double? 
 
 ///|
 /// Return a copied row, or `None` for an invalid row index.
-pub fn DenseMatrix::row(self : DenseMatrix, row : Int) -> Array[Double]? {
+pub fn DenseMatrix::row(self : DenseMatrix, row : Int32) -> Array[Double]? {
   if row < 0 || row >= self.row_count {
     return None
   }
@@ -158,7 +165,10 @@ pub fn DenseMatrix::row(self : DenseMatrix, row : Int) -> Array[Double]? {
 
 ///|
 /// Return a copied column, or `None` for an invalid column index.
-pub fn DenseMatrix::column(self : DenseMatrix, column : Int) -> Array[Double]? {
+pub fn DenseMatrix::column(
+  self : DenseMatrix,
+  column : Int32,
+) -> Array[Double]? {
   if column < 0 || column >= self.column_count {
     return None
   }
@@ -195,8 +205,8 @@ pub fn DenseMatrix::to_flat(self : DenseMatrix) -> Array[Double] {
 /// replacements return `None`.
 pub fn DenseMatrix::with_entry(
   self : DenseMatrix,
-  row : Int,
-  column : Int,
+  row : Int32,
+  column : Int32,
   value : Double,
 ) -> DenseMatrix? {
   if row < 0 ||
@@ -239,10 +249,10 @@ pub fn DenseMatrix::transpose(self : DenseMatrix) -> DenseMatrix {
 /// range.
 pub fn DenseMatrix::block(
   self : DenseMatrix,
-  row_start : Int,
-  row_end : Int,
-  column_start : Int,
-  column_end : Int,
+  row_start : Int32,
+  row_end : Int32,
+  column_start : Int32,
+  column_end : Int32,
 ) -> DenseMatrix? {
   if row_start < 0 ||
     row_end < row_start ||
@@ -271,7 +281,7 @@ pub fn DenseMatrix::block(
 /// row; any out-of-range index fails the operation.
 pub fn DenseMatrix::select_rows(
   self : DenseMatrix,
-  indices : Array[Int],
+  indices : Array[Int32],
 ) -> DenseMatrix? {
   let result = DenseMatrix::zeros(indices.length(), self.column_count).unwrap()
   for i in 0..<indices.length() {
@@ -292,7 +302,7 @@ pub fn DenseMatrix::select_rows(
 /// Select columns in the supplied order; repeated indices are allowed.
 pub fn DenseMatrix::select_columns(
   self : DenseMatrix,
-  indices : Array[Int],
+  indices : Array[Int32],
 ) -> DenseMatrix? {
   let result = DenseMatrix::zeros(self.row_count, indices.length()).unwrap()
   for j in 0..<indices.length() {
@@ -598,7 +608,7 @@ pub fn DenseMatrix::symmetrize(self : DenseMatrix) -> DenseMatrix? {
 /// is applied to the largest input coefficient to classify near-zero pivots.
 pub fn DenseMatrix::lu(
   self : DenseMatrix,
-  relative_tolerance? : Double = 1.0e-12,
+  relative_tolerance~ : Double = 1.0e-12,
 ) -> DenseLuFactor? {
   let n = self.row_count
   if n != self.column_count ||
@@ -801,7 +811,7 @@ pub fn DenseLuFactor::determinant(self : DenseLuFactor) -> Double? {
 }
 
 ///|
-pub fn DenseLuFactor::order(self : DenseLuFactor) -> Int {
+pub fn DenseLuFactor::order(self : DenseLuFactor) -> Int32 {
   self.order
 }
 
@@ -809,7 +819,7 @@ pub fn DenseLuFactor::order(self : DenseLuFactor) -> Int {
 /// Factor a square symmetric positive definite matrix by Cholesky's method.
 pub fn DenseMatrix::cholesky(
   self : DenseMatrix,
-  symmetry_tolerance? : Double = 1.0e-12,
+  symmetry_tolerance~ : Double = 1.0e-12,
 ) -> CholeskyFactor? {
   let n = self.row_count
   if n != self.column_count ||
@@ -932,7 +942,7 @@ pub fn CholeskyFactor::inverse(self : CholeskyFactor) -> DenseMatrix? {
 }
 
 ///|
-pub fn CholeskyFactor::order(self : CholeskyFactor) -> Int {
+pub fn CholeskyFactor::order(self : CholeskyFactor) -> Int32 {
   self.order
 }
 
@@ -947,7 +957,7 @@ pub fn DenseVector::from_array(values : Array[Double]) -> DenseVector? {
 
 ///|
 /// Construct a zero vector of non-negative length.
-pub fn DenseVector::zeros(length : Int) -> DenseVector? {
+pub fn DenseVector::zeros(length : Int32) -> DenseVector? {
   if length < 0 {
     return None
   }
@@ -955,12 +965,12 @@ pub fn DenseVector::zeros(length : Int) -> DenseVector? {
 }
 
 ///|
-pub fn DenseVector::length(self : DenseVector) -> Int {
+pub fn DenseVector::length(self : DenseVector) -> Int32 {
   self.values.length()
 }
 
 ///|
-pub fn DenseVector::get(self : DenseVector, index : Int) -> Double? {
+pub fn DenseVector::get(self : DenseVector, index : Int32) -> Double? {
   if index < 0 || index >= self.values.length() {
     return None
   }
@@ -975,7 +985,7 @@ pub fn DenseVector::to_array(self : DenseVector) -> Array[Double] {
 ///|
 pub fn DenseVector::with_value(
   self : DenseVector,
-  index : Int,
+  index : Int32,
   value : Double,
 ) -> DenseVector? {
   if index < 0 || index >= self.values.length() || !dense_finite(value) {
