@@ -1,0 +1,5 @@
+pkgtype(kind: "executable")
+
+import {
+  "LuoYunze06/moonqp",
+}

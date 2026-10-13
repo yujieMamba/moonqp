@@ -1,0 +1,3 @@
+# MoonQP project instructions
+
+This is a MoonBit package. Follow block style with `///|` separators, use `moon fmt`, `moon info`, and run the relevant `moon check` / `moon test` targets. Keep the library dense-first and explicitly bounded to continuous convex quadratic programs. Do not claim infeasibility from iteration exhaustion. Do not add OSQP source code or copied fixtures. Put tests in `_test.mbt` / `_wbtest.mbt` files; keep production implementation in non-test `.mbt` files. Before adding dependencies, document their role and license.

@@ -1,0 +1,3 @@
+# AI use
+
+OpenAI Codex assisted the participant with candidate planning, bounded ecosystem research, API/design discussion, MoonBit implementation, test drafting, documentation, and CI preparation. The participant selected the problem direction. AI-generated code and tests were reviewed against the documented numerical contract and exercised with deterministic assertions and runnable examples; this is not formal verification or a security audit. No upstream implementation source or unlicensed fixture corpus is intentionally copied. Maintainers remain responsible for reviewing correctness, numerical limitations, security, license compatibility, and future changes.

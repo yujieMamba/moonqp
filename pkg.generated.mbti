@@ -1,0 +1,124 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "LuoYunze06/moonqp"
+
+// Values
+pub fn solve(QpProblem, settings? : SolverSettings) -> SolveResult
+
+// Errors
+
+// Types and methods
+pub struct CholeskyFactor {
+  order : Int
+  lower : Array[Array[Double]]
+}
+pub fn CholeskyFactor::inverse(Self) -> DenseMatrix?
+pub fn CholeskyFactor::order(Self) -> Int
+pub fn CholeskyFactor::solve(Self, Array[Double]) -> Array[Double]?
+
+pub struct DenseLuFactor {
+  order : Int
+  factors : Array[Array[Double]]
+  permutation : Array[Int]
+  pivot_threshold : Double
+  determinant_sign : Double
+}
+pub fn DenseLuFactor::determinant(Self) -> Double?
+pub fn DenseLuFactor::order(Self) -> Int
+pub fn DenseLuFactor::solve(Self, Array[Double]) -> Array[Double]?
+
+pub struct DenseMatrix {
+  row_count : Int
+  column_count : Int
+  values : Array[Double]
+}
+pub fn DenseMatrix::add(Self, Self) -> Self?
+pub fn DenseMatrix::block(Self, Int, Int, Int, Int) -> Self?
+pub fn DenseMatrix::cholesky(Self, symmetry_tolerance? : Double) -> CholeskyFactor?
+pub fn DenseMatrix::clone_matrix(Self) -> Self
+pub fn DenseMatrix::column(Self, Int) -> Array[Double]?
+pub fn DenseMatrix::columns(Self) -> Int
+pub fn DenseMatrix::diagonal(Self) -> Array[Double]?
+pub fn DenseMatrix::frobenius_norm(Self) -> Double?
+pub fn DenseMatrix::from_flat(Int, Int, Array[Double]) -> Self?
+pub fn DenseMatrix::from_rows(Array[Array[Double]]) -> Self?
+pub fn DenseMatrix::get(Self, Int, Int) -> Double?
+pub fn DenseMatrix::hadamard(Self, Self) -> Self?
+pub fn DenseMatrix::identity(Int) -> Self?
+pub fn DenseMatrix::infinity_norm(Self) -> Double?
+pub fn DenseMatrix::is_symmetric(Self, Double) -> Bool
+pub fn DenseMatrix::lu(Self, relative_tolerance? : Double) -> DenseLuFactor?
+pub fn DenseMatrix::multiply(Self, Self) -> Self?
+pub fn DenseMatrix::multiply_vector(Self, DenseVector) -> DenseVector?
+pub fn DenseMatrix::one_norm(Self) -> Double?
+pub fn DenseMatrix::row(Self, Int) -> Array[Double]?
+pub fn DenseMatrix::rows(Self) -> Int
+pub fn DenseMatrix::scale(Self, Double) -> Self?
+pub fn DenseMatrix::select_columns(Self, Array[Int]) -> Self?
+pub fn DenseMatrix::select_rows(Self, Array[Int]) -> Self?
+pub fn DenseMatrix::shape(Self) -> (Int, Int)
+pub fn DenseMatrix::subtract(Self, Self) -> Self?
+pub fn DenseMatrix::symmetrize(Self) -> Self?
+pub fn DenseMatrix::to_flat(Self) -> Array[Double]
+pub fn DenseMatrix::to_rows(Self) -> Array[Array[Double]]
+pub fn DenseMatrix::trace(Self) -> Double?
+pub fn DenseMatrix::transpose(Self) -> Self
+pub fn DenseMatrix::transpose_multiply_vector(Self, DenseVector) -> DenseVector?
+pub fn DenseMatrix::with_entry(Self, Int, Int, Double) -> Self?
+pub fn DenseMatrix::zeros(Int, Int) -> Self?
+
+pub struct DenseVector {
+  values : Array[Double]
+}
+pub fn DenseVector::add(Self, Self) -> Self?
+pub fn DenseVector::axpy(Self, Double, Self) -> Self?
+pub fn DenseVector::distance(Self, Self) -> Double?
+pub fn DenseVector::dot(Self, Self) -> Double?
+pub fn DenseVector::from_array(Array[Double]) -> Self?
+pub fn DenseVector::get(Self, Int) -> Double?
+pub fn DenseVector::infinity_norm(Self) -> Double
+pub fn DenseVector::length(Self) -> Int
+pub fn DenseVector::norm(Self) -> Double?
+pub fn DenseVector::scale(Self, Double) -> Self?
+pub fn DenseVector::subtract(Self, Self) -> Self?
+pub fn DenseVector::to_array(Self) -> Array[Double]
+pub fn DenseVector::with_value(Self, Int, Double) -> Self?
+pub fn DenseVector::zeros(Int) -> Self?
+
+pub(all) struct QpProblem {
+  p : Array[Array[Double]]
+  q : Array[Double]
+  a : Array[Array[Double]]
+  lower : Array[Double]
+  upper : Array[Double]
+}
+pub fn QpProblem::new(Array[Array[Double]], Array[Double], Array[Array[Double]], Array[Double], Array[Double]) -> Self
+
+pub(all) struct SolveResult {
+  x : Array[Double]
+  objective : Double?
+  iterations : Int
+  primal_residual : Double?
+  dual_residual : Double?
+  stationarity_residual : Double?
+  status : SolveStatus
+}
+
+pub(all) enum SolveStatus {
+  Solved
+  IterationLimit
+  InvalidProblem(String)
+  NumericalError(String)
+}
+
+pub(all) struct SolverSettings {
+  rho : Double
+  sigma : Double
+  absolute_tolerance : Double
+  relative_tolerance : Double
+  max_iterations : Int
+}
+pub fn SolverSettings::default() -> Self
+
+// Type aliases
+
+// Traits

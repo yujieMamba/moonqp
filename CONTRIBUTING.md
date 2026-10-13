@@ -1,0 +1,3 @@
+# Contributing
+
+Keep the supported mathematical contract explicit and test every correctness claim. For solver changes, add a deterministic case with independently checked objective, feasibility and residuals; include invalid and termination-boundary tests where relevant. Run `moon fmt`, `moon info`, `moon check --deny-warn` for supported targets and `moon test --target wasm-gc`. Never interpret reaching the iteration budget as proof of infeasibility. Do not add generated benchmark data, copied upstream implementation code, or dependencies without a license/provenance review.
