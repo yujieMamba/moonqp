@@ -29,6 +29,61 @@ test "model evaluation reports objective and interval violation" {
 }
 
 ///|
+test "constraint values preserve row order and do not expose model storage" {
+  let problem = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.0, 1.0]],
+    [0.0, 0.0],
+    [[1.0, 2.0], [-3.0, 4.0]],
+    [0.0, 0.0],
+    [20.0, 20.0],
+  )
+  let values = problem.constraint_values_at([2.0, 3.0]).unwrap()
+  assert_eq(values, [8.0, 6.0])
+  values[0] = 99.0
+  assert_eq(problem.constraint_values_at([2.0, 3.0]), Some([8.0, 6.0]))
+}
+
+///|
+test "constraint values for zero rows are an empty array" {
+  let problem = @moonqp.QpProblem::new([[1.0]], [0.0], [], [], [])
+  assert_eq(problem.constraint_values_at([2.0]), Some([]))
+}
+
+///|
+test "constraint value evaluation rejects invalid inputs and overflow" {
+  let plus_inf = 1.0 / 0.0
+  let nan = plus_inf - plus_inf
+  let problem = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.0, 1.0]],
+    [0.0, 0.0],
+    [[1.0, 2.0]],
+    [-10.0],
+    [10.0],
+  )
+  assert_true(problem.constraint_values_at([1.0]) is None)
+  assert_true(problem.constraint_values_at([nan, 0.0]) is None)
+  assert_true(problem.constraint_values_at([plus_inf, 0.0]) is None)
+
+  let overflowing_sum = @moonqp.QpProblem::new(
+    [[1.0, 0.0], [0.0, 1.0]],
+    [0.0, 0.0],
+    [[1.0e308, 1.0e308]],
+    [-plus_inf],
+    [plus_inf],
+  )
+  assert_true(overflowing_sum.constraint_values_at([1.0, 1.0]) is None)
+
+  let overflowing_product = @moonqp.QpProblem::new(
+    [[1.0]],
+    [0.0],
+    [[1.0e308]],
+    [-plus_inf],
+    [plus_inf],
+  )
+  assert_true(overflowing_product.constraint_values_at([2.0]) is None)
+}
+
+///|
 test "problem constructor snapshots caller-owned arrays" {
   let p = [[2.0]]
   let q = [-4.0]

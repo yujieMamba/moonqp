@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `QpProblem::constraint_values_at` for detached, row-ordered `A x` evaluation with checked dimensions, finite inputs, and arithmetic overflow.
 - Support optional finite, row-ordered dual warm starts for repeated nearby QP solves; omitted values preserve the zero-dual initialization.
 - Add a one-shot dense matrix solve convenience API while retaining reusable LU factors.
 - Add inverse construction from reusable pivoted LU factors.

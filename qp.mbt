@@ -38,6 +38,29 @@ pub fn QpProblem::dimensions(self : QpProblem) -> (Int, Int) {
 }
 
 ///|
+/// Evaluate `A * x` in constraint-row order. The returned array is detached
+/// from the model. Invalid model data, a wrong vector length, non-finite input,
+/// or arithmetic overflow return `None`.
+pub fn QpProblem::constraint_values_at(
+  self : QpProblem,
+  x : Array[Double],
+) -> Array[Double]? {
+  match validate_problem(self) {
+    Some(_) => return None
+    None => ()
+  }
+  if x.length() != self.q.length() || !all_finite(x) {
+    return None
+  }
+  let values = mat_vec(self.a, x)
+  if all_finite(values) {
+    Some(values)
+  } else {
+    None
+  }
+}
+
+///|
 /// Evaluate the quadratic objective at a candidate vector. Invalid model
 /// data, a wrong vector length, non-finite values, or arithmetic overflow
 /// return `None`.

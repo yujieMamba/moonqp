@@ -2,7 +2,7 @@
 
 ## Problem contract
 
-A problem consists of a finite symmetric numerically positive-semidefinite matrix `P`, vector `q`, finite matrix `A`, and one lower/upper bound pair per row. It minimizes `0.5 * xᵀ P x + qᵀx` subject to `lower ≤ Ax ≤ upper`. Bounds may be unbounded on one side using negative infinity in `lower` or positive infinity in `upper`; NaN and the opposite-signed infinities are invalid. Dimension, finite-value, symmetry, convexity and bound-order checks happen before iteration. Equality constraints use identical finite lower and upper bounds.
+A problem consists of a finite symmetric numerically positive-semidefinite matrix `P`, vector `q`, finite matrix `A`, and one lower/upper bound pair per row. It minimizes `0.5 * xᵀ P x + qᵀx` subject to `lower ≤ Ax ≤ upper`. Bounds may be unbounded on one side using negative infinity in `lower` or positive infinity in `upper`; NaN and the opposite-signed infinities are invalid. Dimension, finite-value, symmetry, convexity and bound-order checks happen before iteration. Equality constraints use identical finite lower and upper bounds. `QpProblem::constraint_values_at(x)` evaluates each row of `A x` in the model's constraint-row order and returns a fresh array, so callers cannot mutate the model through the result. It returns `None` for invalid model data, a vector-length mismatch, non-finite candidate values, or a non-finite row dot product (including multiplication or accumulation overflow). Zero constraint rows produce `Some([])`.
 
 ## Dense numeric value API
 
